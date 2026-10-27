@@ -23,11 +23,29 @@ I created a baseline snapshot named **Netwalk-Kali-Lab-Setup** to preserve the i
 
 A snapshot provides a rollback point and depends on the VM's underlying virtual disks. It is not an independent backup. This repository contains documentation and screenshot evidence; VM disk and snapshot files are stored separately.
 
+## 4. NAT network configuration
+I configured a NAT network in VirtualBox's Network Manager to provide a shared network for lab VMs.
+
+| Setting | Configuration |
+| --- | --- |
+| Network name | `NatNetwork` |
+| IPv4 subnet | `10.0.0.0/24` |
+| Subnet mask | `255.255.255.0` |
+| DHCP | Enabled |
+| IPv6 | Disabled |
+
+I enabled DHCP to support automatic IPv4 address allocation for VMs attached to this network. The shared NAT network is intended to support communication between attached lab VMs and outbound access through the host.
+
+![VirtualBox NAT network settings showing NatNetwork, 10.0.0.0/24, DHCP enabled and IPv6 disabled](screenshots/virtualbox-nat-network.png)
+
+This screenshot records the network configuration. Guest IP assignment, communication between VMs, and internet access still require validation from inside the guest.
+
 ## Outcome and evidence
 - I installed the host utilities and registered the Kali Linux VM in VirtualBox.
 - I established a named baseline snapshot for subsequent lab work.
+- I configured the `NatNetwork` IPv4 subnet with DHCP enabled and IPv6 disabled.
 - The screenshots document the downloaded installers and the powered-off VM with its snapshot name.
 - Guest boot, login, and network connectivity have not yet been demonstrated in this entry.
 
 ## Skills demonstrated
-Host preparation, virtualization setup, VM registration, snapshot management, and evidence-based technical documentation.
+Host preparation, virtualization setup, VM registration, snapshot management, NAT networking, DHCP configuration, and evidence-based technical documentation.
