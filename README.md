@@ -38,14 +38,41 @@ I enabled DHCP to support automatic IPv4 address allocation for VMs attached to 
 
 ![VirtualBox NAT network settings showing NatNetwork, 10.0.0.0/24, DHCP enabled and IPv6 disabled](screenshots/virtualbox-nat-network.png)
 
-This screenshot records the network configuration. Guest IP assignment, communication between VMs, and internet access still require validation from inside the guest.
+The NAT network configuration is recorded above. I subsequently configured a static address inside Kali and validated web access, as documented below. Communication between lab VMs has not yet been tested.
+
+## 5. Kali desktop and static IPv4 configuration
+I started the Kali VM and accessed its graphical desktop, confirming that the guest booted successfully.
+
+![Kali Linux desktop running inside VirtualBox](screenshots/kali-desktop.png)
+
+I opened the **Wired connection 1** profile and configured **IPv4 Settings** using the **Manual** method.
+
+| Setting | Value |
+| --- | --- |
+| IPv4 address | `10.0.0.2` |
+| Prefix length | `/24` |
+| Subnet mask | `255.255.255.0` |
+| Default gateway | `10.0.0.1` |
+| DNS server | `8.8.8.8` |
+
+![Kali NetworkManager profile showing manual IPv4 address, gateway and DNS settings](screenshots/kali-static-ipv4.png)
+
+Although DHCP remains enabled on the VirtualBox NAT network, I configured this guest with a static IPv4 address. The guest address must remain unique and should be excluded from the DHCP allocation pool or otherwise coordinated to prevent address conflicts; the pool range is not shown in the supplied evidence.
+
+## 6. Internet connectivity validation
+I opened Firefox inside Kali and accessed Google and other websites to verify outbound web access. The screenshot below captures Google loaded at `www.google.com` inside the VM.
+
+![Google loaded in Firefox inside the Kali VM](screenshots/kali-google-connectivity.png)
+
+This provides evidence of successful browser-based internet access at the time of testing. I have not yet recorded separate command-line tests for the assigned address, routing table, DNS resolution, or connectivity between lab VMs.
 
 ## Outcome and evidence
 - I installed the host utilities and registered the Kali Linux VM in VirtualBox.
 - I established a named baseline snapshot for subsequent lab work.
 - I configured the `NatNetwork` IPv4 subnet with DHCP enabled and IPv6 disabled.
 - The screenshots document the downloaded installers and the powered-off VM with its snapshot name.
-- Guest boot, login, and network connectivity have not yet been demonstrated in this entry.
+- I booted Kali to the graphical desktop and configured a static IPv4 address, gateway, and DNS server.
+- I verified outbound web access in Firefox, with Google shown in the screenshot.
 
 ## Skills demonstrated
-Host preparation, virtualization setup, VM registration, snapshot management, NAT networking, DHCP configuration, and evidence-based technical documentation.
+Host preparation, virtualization setup, VM registration, snapshot management, NAT networking, DHCP configuration, static IPv4 addressing, DNS configuration, connectivity validation, and evidence-based technical documentation.
