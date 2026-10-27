@@ -66,6 +66,17 @@ I opened Firefox inside Kali and accessed Google and other websites to verify ou
 
 This provides evidence of successful browser-based internet access at the time of testing. I have not yet recorded separate command-line tests for the assigned address, routing table, DNS resolution, or connectivity between lab VMs.
 
+## 7. Snapshot review and rollback planning
+I reviewed the VM's snapshot tree to check the available rollback point before continuing with the lab.
+
+![VirtualBox snapshot tree showing Netwalk-Kali-Lab-Setup and Current State changed](screenshots/kali-snapshot-review.png)
+
+The screenshot shows the existing **Netwalk-Kali-Lab-Setup** snapshot, taken on **27 October 2026 at 10:36 AM** as displayed in VirtualBox. The VM is powered off, and **Current State (changed)** appears beneath that snapshot.
+
+This confirms that a rollback point exists, but that the current VM state has changed since it was taken. It does not demonstrate a second snapshot capturing the later static IPv4 configuration and successful web access.
+
+To preserve the current working configuration, my next step is to select **Current State**, choose **Take**, and create a new snapshot named **Kali-Network-Configured-Internet-Verified**. This step remains pending confirmation. Restoring the earlier snapshot may discard subsequent guest changes, including the later network configuration.
+
 ## Outcome and evidence
 - I installed the host utilities and registered the Kali Linux VM in VirtualBox.
 - I established a named baseline snapshot for subsequent lab work.
