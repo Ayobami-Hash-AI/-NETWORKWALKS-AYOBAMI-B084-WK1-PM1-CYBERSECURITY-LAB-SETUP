@@ -179,11 +179,44 @@ The port number **52311** identifies the source-side TCP port in these summaries
 ### Scope of the finding
 The screenshot directly demonstrates source-port reuse across the four visible packets from the scanning source. The exercise asks for the port repeated throughout the attacker's packets; my entered answer is **52311**. Verification across every matching packet would require reviewing the rest of the filtered capture. No grading confirmation is shown in the answer screenshot.
 
+## 6. Identifying open TCP ports from server responses
+
+### Objective and method
+I examined the target's replies to determine which probed ports responded with **SYN, ACK**. I reversed the source and destination addresses used for the initial SYN analysis and applied:
+
+```wireshark
+ip.src == 192.168.10.20 && ip.dst == 192.168.10.66 && tcp.flags.syn == 1 && tcp.flags.ack == 1
+```
+
+This isolates SYN-ACK responses from the target to the scanning host. In this response direction, the **source port** is the server port being assessed, while destination port **52311** belongs to the scanning host.
+
+![Target SYN-ACK responses identifying open TCP ports 22, 80, and 443](screenshots/09-open-ports-syn-ack.png)
+
+### Verified results
+
+| Packet | Time (seconds) | Server source port | Scanner destination port | Flags |
+| --- | --- | --- | --- | --- |
+| 92 | 3.425500 | **22** | 52311 | SYN, ACK |
+| 103 | 3.488000 | **80** | 52311 | SYN, ACK |
+| 112 | 3.538000 | **443** | 52311 | SYN, ACK |
+
+**Exercise answer: 22, 80, 443.**
+
+The screenshot shows three response packets, each from a different server port. These responses indicate that the three ports accepted TCP connection initiation at the time of the capture. I used the source port before the arrow in each Info summary to identify the listening port.
+
+### Analytical significance and limits
+This response analysis moves the investigation beyond identifying attempted connections: it provides evidence of open TCP ports on the target. Ports 22, 80, and 443 are commonly associated with SSH, HTTP, and HTTPS, respectively; the SYN-ACK packets alone do not verify which applications or versions are actually listening.
+
+A SYN-ACK response does not establish that the scanner completed the handshake, authenticated, or exploited a service. Similarly, ports absent from this filtered view cannot all be classified as closed without reviewing reset responses, missing replies, and the capture context.
+
+### Skills applied
+I used directional endpoint filtering, TCP flag analysis, response correlation, and source/destination port interpretation to identify open ports from packet evidence.
+
 ## Current outcome
-I launched Wireshark, started a Wi-Fi capture, and reviewed an excerpt containing ARP resolution, a DNS exchange, and a TCP three-way handshake. I then applied a SYN-without-ACK display filter and verified **55 matching packets out of 309 (17.8%)**. I identified a possible multi-port probing pattern in the visible excerpt; I subsequently identified **192.168.10.66** as the exercise's scanning source and **192.168.10.20** as its target. Response analysis and deeper packet inspection remain pending.
+I launched Wireshark, started a Wi-Fi capture, and reviewed an excerpt containing ARP resolution, a DNS exchange, and a TCP three-way handshake. I then applied a SYN-without-ACK display filter and verified **55 matching packets out of 309 (17.8%)**. I identified a possible multi-port probing pattern in the visible excerpt; I subsequently identified **192.168.10.66** as the exercise's scanning source and **192.168.10.20** as its target. I then inspected the target's SYN-ACK replies and identified open TCP ports **22, 80, and 443**. Application identification and subsequent session analysis remain pending.
 
 ## Evidence handling
-The initial launch screenshot contains no visible IP addresses or packet payloads. For the capture screenshot, Source and Destination values and the address-bearing ARP/DNS Info summaries are covered. These masks also conceal visible MAC identifiers and the internal DNS name. The earlier capture image remains redacted. For the subsequent SYN-filter step, I retained the original screenshot and documented its endpoint addresses without redaction, as requested. The source/target identification screenshots are also retained without redaction. Protocol names, timing, lengths, ports, and TCP flags are preserved.
+The initial launch screenshot contains no visible IP addresses or packet payloads. For the capture screenshot, Source and Destination values and the address-bearing ARP/DNS Info summaries are covered. These masks also conceal visible MAC identifiers and the internal DNS name. The earlier capture image remains redacted. For the subsequent SYN-filter step, I retained the original screenshot and documented its endpoint addresses without redaction, as requested. The source/target identification screenshots are also retained without redaction. The open-port response screenshot is also retained without redaction, as requested. Protocol names, timing, lengths, ports, and TCP flags are preserved.
 
 ## Skills demonstrated so far
 Wireshark capture preparation, Wi-Fi traffic collection, ARP and DNS interpretation, TCP handshake analysis, TCP flag filtering, packet-count validation, preliminary connection-pattern analysis, evidence handling, and technical reporting.
