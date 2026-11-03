@@ -212,11 +212,55 @@ A SYN-ACK response does not establish that the scanner completed the handshake, 
 ### Skills applied
 I used directional endpoint filtering, TCP flag analysis, response correlation, and source/destination port interpretation to identify open ports from packet evidence.
 
+## 7. Identifying closed-port responses
+
+### Objective and method
+I inspected replies from the target to determine how it rejected connection attempts to closed TCP ports. I applied the following display filter:
+
+```wireshark
+ip.src == 192.168.10.20 && ip.dst == 192.168.10.66 && tcp.flags.reset == 1 && tcp.flags.ack == 1
+```
+
+The address conditions select traffic from the target back to the scanning host. The flag conditions require both **RST** and **ACK** to be set.
+
+![Wireshark showing 37 target RST-ACK responses to the scanning host](screenshots/10-closed-ports-rst-ack.png)
+
+### Verified result
+**The closed-port reply flags are RST, ACK.** The status bar reports **37 displayed packets out of 309 (12.0%)**. These are matching response packets, rather than a count derived from the nine rows currently visible.
+
+| Visible packet | Time (seconds) | Server source port | Scanner destination port | Flags |
+| --- | --- | --- | --- | --- |
+| 169 | 3.788000 | 6000 | 52311 | RST, ACK |
+| 171 | 3.800500 | 1025 | 52311 | RST, ACK |
+| 173 | 3.813000 | 465 | 52311 | RST, ACK |
+| 175 | 3.825500 | 514 | 52311 | RST, ACK |
+| 177 | 3.838000 | 119 | 52311 | RST, ACK |
+| 179 | 3.850500 | 7 | 52311 | RST, ACK |
+| 181 | 3.863000 | 81 | 52311 | RST, ACK |
+| 183 | 3.875500 | 8008 | 52311 | RST, ACK |
+| 185 | 3.888000 | 1 | 52311 | RST, ACK |
+
+The visible responses are **54 bytes**, with relative sequence number **0**, acknowledgement number **1**, and TCP payload length **0**. The server port appears before the arrow because these packets travel in the reverse direction from the original probes.
+
+### Interpretation
+For an initial SYN sent to a closed TCP port, a reset with acknowledgement rejects the connection attempt. In this exercise, the target's RST-ACK replies provide evidence of closed-port responses, while its SYN-ACK replies identify the open ports documented in Section 6.
+
+| Response category | Matching packets | Interpretation in this exercise |
+| --- | --- | --- |
+| SYN, ACK | 3 | Open-port responses from ports 22, 80, and 443 |
+| RST, ACK | 37 | Connection rejection responses |
+| Combined | **40** | Total packets across these two response filters |
+
+The combined count is **40 response packets**, not 40 reset responses. Packet counts alone do not establish a unique-port count: retransmissions or repeated probes must be considered before equating packets with distinct ports. The visible excerpt directly identifies nine different responding ports; the complete list of 37 responses has not been supplied for independent deduplication.
+
+### Skills applied
+I used TCP reset filtering, direction-aware port interpretation, status-bar count validation, and comparison of positive and negative connection responses to characterize the target's exposed TCP ports.
+
 ## Current outcome
-I launched Wireshark, started a Wi-Fi capture, and reviewed an excerpt containing ARP resolution, a DNS exchange, and a TCP three-way handshake. I then applied a SYN-without-ACK display filter and verified **55 matching packets out of 309 (17.8%)**. I identified a possible multi-port probing pattern in the visible excerpt; I subsequently identified **192.168.10.66** as the exercise's scanning source and **192.168.10.20** as its target. I then inspected the target's SYN-ACK replies and identified open TCP ports **22, 80, and 443**. Application identification and subsequent session analysis remain pending.
+I launched Wireshark, started a Wi-Fi capture, and reviewed an excerpt containing ARP resolution, a DNS exchange, and a TCP three-way handshake. I then applied a SYN-without-ACK display filter and verified **55 matching packets out of 309 (17.8%)**. I identified a possible multi-port probing pattern in the visible excerpt; I subsequently identified **192.168.10.66** as the exercise's scanning source and **192.168.10.20** as its target. I then inspected the target's SYN-ACK replies and identified open TCP ports **22, 80, and 443**. I also verified **37 RST-ACK response packets**, distinguishing closed-port rejections from the three open-port SYN-ACK replies. Application identification and subsequent session analysis remain pending.
 
 ## Evidence handling
-The initial launch screenshot contains no visible IP addresses or packet payloads. For the capture screenshot, Source and Destination values and the address-bearing ARP/DNS Info summaries are covered. These masks also conceal visible MAC identifiers and the internal DNS name. The earlier capture image remains redacted. For the subsequent SYN-filter step, I retained the original screenshot and documented its endpoint addresses without redaction, as requested. The source/target identification screenshots are also retained without redaction. The open-port response screenshot is also retained without redaction, as requested. Protocol names, timing, lengths, ports, and TCP flags are preserved.
+The initial launch screenshot contains no visible IP addresses or packet payloads. For the capture screenshot, Source and Destination values and the address-bearing ARP/DNS Info summaries are covered. These masks also conceal visible MAC identifiers and the internal DNS name. The earlier capture image remains redacted. For the subsequent SYN-filter step, I retained the original screenshot and documented its endpoint addresses without redaction, as requested. The source/target identification screenshots are also retained without redaction. The open-port and closed-port response screenshots are also retained without redaction, as requested. Protocol names, timing, lengths, ports, and TCP flags are preserved.
 
 ## Skills demonstrated so far
 Wireshark capture preparation, Wi-Fi traffic collection, ARP and DNS interpretation, TCP handshake analysis, TCP flag filtering, packet-count validation, preliminary connection-pattern analysis, evidence handling, and technical reporting.
