@@ -69,11 +69,63 @@ The DNS response and subsequent TCP connection involve the same resolved server 
 - The screenshot supports an initial protocol review; a saved capture file and expanded packet details have not yet been supplied for deeper validation.
 - The displayed ARP, DNS, and TCP activity alone does not demonstrate malicious behaviour.
 
+## 3. Filtering TCP connection initiation packets
+
+### Objective and method
+I applied a display filter to isolate TCP connection initiation packets with the SYN flag set and ACK flag unset:
+
+```wireshark
+tcp.flags.syn == 1 && tcp.flags.ack == 0
+```
+
+- `tcp.flags.syn == 1` matches packets with SYN set.
+- `tcp.flags.ack == 0` excludes packets with ACK set, including SYN-ACK replies.
+- `&&` requires both conditions to match.
+
+This is a **display filter**: it narrows the visible results without removing packets from the underlying capture.
+
+![Wireshark SYN-only display filter showing 55 matching packets out of 309](screenshots/03-tcp-syn-filter.png)
+
+### Verified result
+
+| Metric | Screenshot result |
+| --- | --- |
+| Total packets | 309 |
+| Displayed packets matching the filter | **55** |
+| Displayed percentage | **17.8%** |
+| Visible rows in this screenshot | 9 |
+
+I obtained the answer from the **Displayed** counter in the status bar. The nine rows visible on screen are only part of the filtered result; they are not the total matching packet count. Likewise, the No. column preserves original capture packet numbers rather than renumbering the filtered results.
+
+### Visible connection attempts
+
+All nine visible packets target `192.168.10.20` and have a reported length of **58 bytes**.
+
+| Packet | Time (seconds) | Source | Source port | Destination port |
+| --- | --- | --- | --- | --- |
+| 7 | 0.370000 | 192.168.10.31 | 50100 | 80 |
+| 21 | 1.060000 | 192.168.10.32 | 50113 | 443 |
+| 39 | 1.750000 | 192.168.10.45 | 50126 | 80 |
+| 53 | 2.230000 | 192.168.10.52 | 50139 | 443 |
+| 71 | 2.920000 | 192.168.10.58 | 50152 | 80 |
+| 87 | 3.400000 | 192.168.10.66 | 52311 | 3306 |
+| 89 | 3.412500 | 192.168.10.66 | 52311 | 445 |
+| 91 | 3.425000 | 192.168.10.66 | 52311 | 22 |
+| 94 | 3.437500 | 192.168.10.66 | 52311 | 8080 |
+
+### Initial analytical finding
+The visible excerpt shows `192.168.10.66` sending SYN packets to four different ports on the same destination within **37.5 milliseconds**. This is consistent with a possible multi-port probing pattern and warrants further investigation. It does not establish malicious intent or prove that those ports are open.
+
+To investigate further, I would review the full set of matching packets, destination-port distribution, server replies, retransmissions, and any available context for the source host. These follow-up checks have not yet been documented.
+
+### Interpretation limits
+The **55** result counts matching packets, not necessarily 55 unique connections or successful sessions. Retransmitted SYN packets can also match the filter. Excluding ACK-bearing packets also hides server SYN-ACK responses and the final handshake ACK, so this view cannot establish connection success on its own.
+
 ## Current outcome
-I launched Wireshark, started a Wi-Fi capture, and reviewed an excerpt containing ARP resolution, a DNS exchange, and a TCP three-way handshake. Display-filter application and deeper packet inspection remain to be documented.
+I launched Wireshark, started a Wi-Fi capture, and reviewed an excerpt containing ARP resolution, a DNS exchange, and a TCP three-way handshake. I then applied a SYN-without-ACK display filter and verified **55 matching packets out of 309 (17.8%)**. I identified a possible multi-port probing pattern in the visible excerpt; deeper packet inspection remains pending.
 
 ## Evidence handling
-The initial launch screenshot contains no visible IP addresses or packet payloads. For the capture screenshot, Source and Destination values and the address-bearing ARP/DNS Info summaries are covered. These masks also conceal visible MAC identifiers and the internal DNS name. Endpoint values are omitted from this write-up; protocol names, timing, lengths, ports, and TCP flags remain available for analysis. Only the redacted capture image is published here.
+The initial launch screenshot contains no visible IP addresses or packet payloads. For the capture screenshot, Source and Destination values and the address-bearing ARP/DNS Info summaries are covered. These masks also conceal visible MAC identifiers and the internal DNS name. The earlier capture image remains redacted. For the subsequent SYN-filter step, I retained the original screenshot and documented its endpoint addresses without redaction, as requested. Protocol names, timing, lengths, ports, and TCP flags are preserved.
 
 ## Skills demonstrated so far
-Wireshark capture preparation, Wi-Fi traffic collection, ARP and DNS interpretation, TCP handshake analysis, evidence redaction, and technical reporting.
+Wireshark capture preparation, Wi-Fi traffic collection, ARP and DNS interpretation, TCP handshake analysis, TCP flag filtering, packet-count validation, preliminary connection-pattern analysis, evidence handling, and technical reporting.
