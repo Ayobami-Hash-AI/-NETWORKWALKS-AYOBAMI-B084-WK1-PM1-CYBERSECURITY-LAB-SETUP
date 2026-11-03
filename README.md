@@ -1,6 +1,10 @@
 # Networkwalks Cybersecurity Lab Setup
 **Author:** Ayobami Odulaja | **Cohort:** B084 | **Module:** WK1 PM1
 
+## Additional Week 1 exercises
+
+- [Wireshark Traffic Analysis — supplementary exercise](week-01/wireshark/README.md)
+
 ## Objective
 I prepared a Windows host and added a Kali Linux virtual machine to Oracle VirtualBox to establish a foundation for my cybersecurity lab exercises.
 
