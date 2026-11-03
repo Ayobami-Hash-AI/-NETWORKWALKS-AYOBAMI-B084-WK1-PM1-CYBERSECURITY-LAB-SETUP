@@ -121,11 +121,43 @@ To investigate further, I would review the full set of matching packets, destina
 ### Interpretation limits
 The **55** result counts matching packets, not necessarily 55 unique connections or successful sessions. Retransmitted SYN packets can also match the filter. Excluding ACK-bearing packets also hides server SYN-ACK responses and the final handshake ACK, so this view cannot establish connection success on its own.
 
+## 4. Identifying the scanning source and target
+
+### Investigation objective
+After isolating the initial TCP SYN packets, I compared source and destination addresses to identify the host generating repeated connection attempts and the system receiving them.
+
+| Role in the exercise | IP address | Evidence |
+| --- | --- | --- |
+| Scanning source / attacker identified by the exercise | `192.168.10.66` | Repeated SYN packets toward multiple destination ports on the same host |
+| Target host | `192.168.10.20` | Destination address in those connection attempts |
+
+### Source identification
+I identified **192.168.10.66** as the scanning source. In the visible excerpt, packets **87, 89, 91, and 94** use that source address and target destination ports **3306, 445, 22, and 8080**, respectively.
+
+These four attempts occur between **3.400000** and **3.437500 seconds**, a span of **37.5 milliseconds**. The concentration of attempts against different services on one destination distinguishes this source from the other visible clients, each of which has only one SYN packet in this excerpt. The full capture would be needed to compare every client's complete behaviour.
+
+![Exercise question and entered source identification answer](screenshots/04-source-identification-answer.png)
+
+### Target identification
+I identified **192.168.10.20** as the target by checking the **Destination** column for the repeated SYN packets originating from **192.168.10.66**. The source is initiating the connection attempts; the destination is receiving them.
+
+![Exercise question and entered target identification answer](screenshots/05-target-identification-answer.png)
+
+![SYN-filtered packet evidence showing the scanning source and target](screenshots/06-source-target-packet-evidence.png)
+
+### Assessment
+For this exercise, the attacker/source answer is **192.168.10.66**, and the target answer is **192.168.10.20**. The packet pattern supports identifying multi-port probing from that source toward the target. The answer-field screenshots record the entered answers; they do not display a grading or acceptance confirmation.
+
+This evidence does not establish successful exploitation, compromise, or the open/closed state of the probed ports. Those conclusions require inspection of replies and subsequent traffic.
+
+### Skills applied
+I used TCP flag filtering, source/destination correlation, destination-port comparison, and packet timing to move from a filtered result to an evidence-supported source/target assessment.
+
 ## Current outcome
-I launched Wireshark, started a Wi-Fi capture, and reviewed an excerpt containing ARP resolution, a DNS exchange, and a TCP three-way handshake. I then applied a SYN-without-ACK display filter and verified **55 matching packets out of 309 (17.8%)**. I identified a possible multi-port probing pattern in the visible excerpt; deeper packet inspection remains pending.
+I launched Wireshark, started a Wi-Fi capture, and reviewed an excerpt containing ARP resolution, a DNS exchange, and a TCP three-way handshake. I then applied a SYN-without-ACK display filter and verified **55 matching packets out of 309 (17.8%)**. I identified a possible multi-port probing pattern in the visible excerpt; I subsequently identified **192.168.10.66** as the exercise's scanning source and **192.168.10.20** as its target. Response analysis and deeper packet inspection remain pending.
 
 ## Evidence handling
-The initial launch screenshot contains no visible IP addresses or packet payloads. For the capture screenshot, Source and Destination values and the address-bearing ARP/DNS Info summaries are covered. These masks also conceal visible MAC identifiers and the internal DNS name. The earlier capture image remains redacted. For the subsequent SYN-filter step, I retained the original screenshot and documented its endpoint addresses without redaction, as requested. Protocol names, timing, lengths, ports, and TCP flags are preserved.
+The initial launch screenshot contains no visible IP addresses or packet payloads. For the capture screenshot, Source and Destination values and the address-bearing ARP/DNS Info summaries are covered. These masks also conceal visible MAC identifiers and the internal DNS name. The earlier capture image remains redacted. For the subsequent SYN-filter step, I retained the original screenshot and documented its endpoint addresses without redaction, as requested. The source/target identification screenshots are also retained without redaction. Protocol names, timing, lengths, ports, and TCP flags are preserved.
 
 ## Skills demonstrated so far
 Wireshark capture preparation, Wi-Fi traffic collection, ARP and DNS interpretation, TCP handshake analysis, TCP flag filtering, packet-count validation, preliminary connection-pattern analysis, evidence handling, and technical reporting.
