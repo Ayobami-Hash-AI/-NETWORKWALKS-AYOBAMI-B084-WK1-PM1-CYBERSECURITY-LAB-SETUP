@@ -153,6 +153,32 @@ This evidence does not establish successful exploitation, compromise, or the ope
 ### Skills applied
 I used TCP flag filtering, source/destination correlation, destination-port comparison, and packet timing to move from a filtered result to an evidence-supported source/target assessment.
 
+## 5. Identifying the repeated TCP source port
+
+### Objective and answer
+I examined the **Info** column for the SYN packets originating from the identified scanning source, `192.168.10.66`. The repeated port number was **52311**.
+
+![Exercise question with the entered repeated-port answer of 52311](screenshots/07-repeated-source-port-answer.png)
+
+### Evidence and interpretation
+Wireshark's packet summaries show the port direction as **source port → destination port**. For the visible scanning packets:
+
+| Packet | Source port | Destination port | Flags |
+| --- | --- | --- | --- |
+| 87 | **52311** | 3306 | SYN |
+| 89 | **52311** | 445 | SYN |
+| 91 | **52311** | 22 | SYN |
+| 94 | **52311** | 8080 | SYN |
+
+![SYN-filtered packet list showing repeated source port 52311 and changing destination ports](screenshots/08-repeated-source-port-evidence.png)
+
+I distinguished the fixed **source port** from the changing **destination ports**. The visible packets retain the same source IP, destination IP, and source port while addressing different destination ports. This supports the previously identified multi-port probing pattern against `192.168.10.20`.
+
+The port number **52311** identifies the source-side TCP port in these summaries; it does not identify a listening service on the target. Each change in destination port also changes the TCP connection tuple, even when the source port remains constant.
+
+### Scope of the finding
+The screenshot directly demonstrates source-port reuse across the four visible packets from the scanning source. The exercise asks for the port repeated throughout the attacker's packets; my entered answer is **52311**. Verification across every matching packet would require reviewing the rest of the filtered capture. No grading confirmation is shown in the answer screenshot.
+
 ## Current outcome
 I launched Wireshark, started a Wi-Fi capture, and reviewed an excerpt containing ARP resolution, a DNS exchange, and a TCP three-way handshake. I then applied a SYN-without-ACK display filter and verified **55 matching packets out of 309 (17.8%)**. I identified a possible multi-port probing pattern in the visible excerpt; I subsequently identified **192.168.10.66** as the exercise's scanning source and **192.168.10.20** as its target. Response analysis and deeper packet inspection remain pending.
 
